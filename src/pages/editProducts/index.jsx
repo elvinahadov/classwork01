@@ -1,17 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useStore } from "../../store/store";
+import { useNavigate } from "react-router-dom";
 
-const AddProducts = () => {
-  const [data, setData] = useState({
-    name: "",
-    supplierId: "",
-    categoryId: "",
-    quantityPerUnit: "",
-    unitPrice: "",
-    unitsInStock: "",
-    unitsOnOrder: "",
-    reorderLevel: "",
-    discontinued: false,
-  });
+const EditProducts = () => {
+    const navigate=useNavigate()
+  const [data, setData] = useState([
+    {
+      name: "",
+      supplierId: "",
+      categoryId: "",
+      quantityPerUnit: "",
+      unitPrice: "",
+      unitsInStock: "",
+      unitsOnOrder: "",
+      reorderLevel: "",
+      discontinued: false,
+    },
+  ]);
+  const { editingProdId } = useStore();
+
+  const fetchProductById = async () => {
+    try {
+      const response = await fetch(
+        `https://northwind.vercel.app/api/products/${editingProdId}`
+      );
+      const productData = await response.json();
+      setData(productData);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -25,9 +43,9 @@ const AddProducts = () => {
     e.preventDefault();
     try {
       const response = await fetch(
-        `https://northwind.vercel.app/api/products`,
+        `https://northwind.vercel.app/api/products/${editingProdId}`,
         {
-          method: "POST",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
@@ -35,29 +53,23 @@ const AddProducts = () => {
         }
       );
       if (response.ok) {
-        alert("Product added successfully!");
-        setData({
-          name: "",
-          supplierId: "",
-          categoryId: "",
-          quantityPerUnit: "",
-          unitPrice: "",
-          unitsInStock: "",
-          unitsOnOrder: "",
-          reorderLevel: "",
-          discontinued: false,
-        });
+        alert("Product updated successfully!");
       } else {
-        alert("Failed to add product");
+        alert("Failed to update product");
       }
     } catch (error) {
-      console.error("Error adding product:", error);
+      console.error("Error updating product:", error);
     }
+    navigate("/products")
   };
+
+  useEffect(() => {
+    fetchProductById();
+  }, [editingProdId]);
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-5">Add Product</h1>
+      <h1 className="text-2xl font-bold mb-5">Edit Product</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
@@ -172,11 +184,11 @@ const AddProducts = () => {
           type="submit"
           className="px-4 py-2 bg-blue-500 text-white rounded-md shadow hover:bg-blue-600"
         >
-          Add Product
+          Save Changes
         </button>
       </form>
     </div>
   );
 };
 
-export default AddProducts;
+export default EditProducts;
