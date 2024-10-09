@@ -22,6 +22,7 @@ const Products = () => {
     navigate(`/editProducts`);
   };
   const handleDeleteProduct = async (id) => {
+    console.log(id)
     await fetch(`https://northwind.vercel.app/api/products/${id}`, {
       method: "DELETE",
       headers: {
